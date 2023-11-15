@@ -1,13 +1,62 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import sonicLogo from "../../../../public/images/sonic.png";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { ClientProps, ClientStateProps, UserProps } from "@/types/login.types";
+
 const Oauthv1 = () => {
   const searchParams = useSearchParams();
   const clientId = searchParams.get("client_id");
   const callback = searchParams.get("callback");
 
+  const [userLoginCreds, setUserLoginCreds] = useState({
+    email: "",
+    password: "",
+  });
+  const [passwordType, setPasswordType] = useState("password");
+
+  const [client, setClient] = useState<ClientProps>({
+    clientId: "",
+    // Parent Domain Callback
+    pdc: "",
+    active: false,
+    // Child Domain Callback
+    cdc: "",
+    requestId: "",
+    meta: {
+      createdAt: "",
+      updatedAt: "",
+      hasApiCallQuota: false,
+    },
+  });
+
+  const [clientStates, setClientStates] = useState<ClientStateProps>({
+    isLoading: false,
+    hasError: false,
+    error: {},
+    isSuccess: false,
+  });
+  const [userStates, setUserStates] = useState<ClientStateProps>({
+    isLoading: false,
+    hasError: false,
+    error: {},
+    isSuccess: false,
+  });
+
+  const [user, setUser] = useState<UserProps>({
+    data: {},
+    hasError: false,
+    error: {},
+    TFA: false,
+  });
+
+  const [otp, setOtp] = useState("");
+
   const [disabled, setDisabled] = useState(false);
+
+  const getClientIdStatus = async () => {
+    if (!clientId || !callback) return false;
+  };
 
   return (
     <div className="w-full sm:flex sm:justify-center sm:items-center min-h-screen   sm:pt-3">
@@ -16,6 +65,13 @@ const Oauthv1 = () => {
           <img src={sonicLogo.src} className="w-6 h-6" />
           <p className="text-slate-600">Sign in with Sonic</p>
         </div>
+        {(clientStates.isLoading || userStates.isLoading) && (
+          <div className="w-full">
+            <div className="h-1.5 w-full bg-surfaceMixed600/50 overflow-hidden">
+              <div className="animate-progress w-full h-full bg-surfaceMixed100 origin-left-right"></div>
+            </div>
+          </div>
+        )}
         {clientId && callback ? (
           <>
             <div className="mt-10 mb-4 flex flex-col justify-center items-center w-full">
@@ -24,7 +80,7 @@ const Oauthv1 = () => {
               </p>
               <p>
                 to continue to{" "}
-                <span className="text-sky-600 hover:underline cursor-pointer">
+                <span className="text-complementaryDarker hover:underline cursor-pointer">
                   aoe2.sonicesports.com
                 </span>
               </p>
@@ -42,16 +98,49 @@ const Oauthv1 = () => {
                 <input
                   className="w-full bg-gray-50/50 text-xs rounded-sm px-1 py-2 border focus:outline focus:outline-surface500"
                   placeholder="email address"
+                  value={userLoginCreds.email}
+                  autoComplete="off"
+                  autoFocus={false}
+                  autoSave="off"
+                  onChange={(e) =>
+                    setUserLoginCreds({
+                      ...userLoginCreds,
+                      email: e.target.value,
+                    })
+                  }
                   type="email"
                 />
               </div>
               <div className="w-full max-w-sm">
                 <p className="text-gray-600 font-medium">Password</p>
-                <input
-                  className="w-full bg-gray-50/50 text-xs rounded-sm px-1 py-2 border focus:outline focus:outline-surface500"
-                  placeholder="password"
-                  type="password"
-                />
+                <div className="flex justify-start items-center gap-1 relative">
+                  <input
+                    className="w-full bg-gray-50/50 text-xs rounded-sm px-1 py-2 border focus:outline focus:outline-surface500"
+                    placeholder="password"
+                    value={userLoginCreds.password}
+                    autoComplete="off"
+                    autoFocus={false}
+                    autoSave="off"
+                    onChange={(e) =>
+                      setUserLoginCreds({
+                        ...userLoginCreds,
+                        password: e.target.value,
+                      })
+                    }
+                    type={passwordType}
+                  />
+                  {passwordType === "password" ? (
+                    <Eye
+                      className="absolute right-0 text-surfaceMixed400 hover:bg-surfaceMixed600/50 bg-surfaceMixed600/20 h-full w-8 p-1 cursor-pointer"
+                      onClick={() => setPasswordType("text")}
+                    />
+                  ) : (
+                    <EyeOff
+                      className="absolute right-0 text-surfaceMixed400 hover:bg-surfaceMixed600/50 bg-surfaceMixed600/20 h-full w-8 p-1 cursor-pointer"
+                      onClick={() => setPasswordType("password")}
+                    />
+                  )}
+                </div>
               </div>
               <p className="text-start w-full max-w-sm text-surfaceMixed400 mt-2 underline cursor-pointer hover:text-surfaceMixed100">
                 can't sign in?
@@ -60,11 +149,13 @@ const Oauthv1 = () => {
 
             <div className="w-full max-w-sm mx-auto mb-8 px-2">
               <button
-                disabled={disabled}
-                onClick={() => setDisabled(true)}
+                disabled={clientStates.isLoading || userStates.isLoading}
+                onClick={() =>
+                  setUserStates({ ...userStates, isLoading: true })
+                }
                 className="w-full flex justify-center items-center text-center bg-surfaceMixed200 py-2 text-white hover:bg-surfaceMixed300 disabled:bg-surfaceMixed500 rounded"
               >
-                {disabled ? <Loader2 className="animate-spin" /> : "Sign In"}
+                Sign In
               </button>
             </div>
 

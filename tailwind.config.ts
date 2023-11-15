@@ -8,6 +8,19 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      keyframes: {
+        progress: {
+          "0%": { transform: " translateX(0) scaleX(0)" },
+          "40%": { transform: "translateX(0) scaleX(0.4)" },
+          "100%": { transform: "translateX(100%) scaleX(0.5)" },
+        },
+      },
+      transformOrigin: {
+        "left-right": "0% 50%",
+      },
+      animation: {
+        progress: "progress 1s infinite linear",
+      },
       colors: {
         blueGray: "#47414d",
         darkBlueGray: "#1c1523",
@@ -38,6 +51,8 @@ const config: Config = {
         surfaceMixed500: "#78727c",
         surfaceMixed600: "#918d95",
         complementary: "#B4EA81",
+        complementaryDark: "#76ce22",
+        complementaryDarker: "#5ea51b",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
